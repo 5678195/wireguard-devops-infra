@@ -1,5 +1,10 @@
 # WireGuard DevOps Infrastructure
 
+## Architecture Diagram
+👉 [View Interactive Diagram](docs/architecture.html)
+
+![Architecture](docs/architecture.html)
+
 A production-grade VPN server built with modern DevOps practices.
 
 ## Architecture
