@@ -1,8 +1,5 @@
 # WireGuard DevOps Infrastructure
 
-## Architecture Diagram
-
-See [architecture diagram](docs/architecture.html) for full infrastructure overview.
 ## Architecture
 - **VPN:** WireGuard (UDP 51820)
 - **Cloud:** AWS EC2 (Frankfurt - eu-central-1)
