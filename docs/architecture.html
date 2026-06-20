@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WireGuard DevOps Infrastructure</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #0a0e1a; --surface: #111827; --border: #1e2d45;
+    --accent: #00d4ff; --green: #00ff88; --orange: #ff6b35;
+    --purple: #a855f7; --yellow: #fbbf24; --text: #e2e8f0; --muted: #64748b;
+  }
+  body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; padding: 32px 20px; }
+  .header { text-align: center; margin-bottom: 40px; }
+  .header h1 { font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: 700; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; }
+  .header .sub { font-size: 12px; color: var(--muted); margin-top: 6px; font-family: 'JetBrains Mono', monospace; letter-spacing: 1px; }
+  .header .badge { display: inline-block; margin-top: 10px; padding: 3px 12px; border: 1px solid var(--green); border-radius: 20px; font-size: 11px; color: var(--green); font-family: 'JetBrains Mono', monospace; }
+  .diagram { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+  .layer { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; }
+  .layer-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; padding: 3px 10px; border-radius: 6px; margin-bottom: 14px; display: inline-block; }
+  .layer-label.blue  { background: rgba(0,212,255,0.12); color: var(--accent);  border: 1px solid rgba(0,212,255,0.3); }
+  .layer-label.green { background: rgba(0,255,136,0.10); color: var(--green);   border: 1px solid rgba(0,255,136,0.3); }
+  .layer-label.orange{ background: rgba(255,107,53,0.12); color: var(--orange); border: 1px solid rgba(255,107,53,0.3); }
+  .layer-label.purple{ background: rgba(168,85,247,0.12); color: var(--purple); border: 1px solid rgba(168,85,247,0.3); }
+  .layer-label.yellow{ background: rgba(251,191,36,0.12); color: var(--yellow); border: 1px solid rgba(251,191,36,0.3); }
+  .nodes { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .node { background: #0d1a2e; border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; min-width: 110px; flex: 1; text-align: center; }
+  .node .icon { font-size: 20px; margin-bottom: 4px; }
+  .node .name { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; color: var(--text); }
+  .node .desc { font-size: 10px; color: var(--muted); margin-top: 2px; }
+  .arrow { text-align: center; color: var(--muted); font-size: 18px; line-height: 1; margin: -4px 0; }
+  .vpn-server { background: linear-gradient(135deg, rgba(0,212,255,0.08), rgba(0,255,136,0.05)); border: 2px solid var(--accent); border-radius: 12px; padding: 16px 20px; }
+  .vpn-server .server-title { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; color: var(--accent); margin-bottom: 12px; text-align: center; letter-spacing: 1px; }
+  .server-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .server-item { background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; font-family: 'JetBrains Mono', monospace; font-size: 10px; }
+  .server-item .si-label { color: var(--muted); margin-bottom: 2px; }
+  .server-item .si-val { color: var(--green); font-weight: 600; }
+  .port-badge { background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.3); color: var(--yellow); font-family: 'JetBrains Mono', monospace; font-size: 9px; padding: 1px 6px; border-radius: 4px; margin-left: 4px; }
+  .legend { max-width: 900px; margin: 20px auto 0; display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .tag { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 9px; padding: 2px 7px; border-radius: 4px; margin: 2px; }
+  .tag.blue   { background: rgba(0,212,255,0.15);  color: var(--accent); }
+  .tag.green  { background: rgba(0,255,136,0.12);  color: var(--green); }
+  .tag.orange { background: rgba(255,107,53,0.15); color: var(--orange); }
+  .tag.purple { background: rgba(168,85,247,0.15); color: var(--purple); }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>WireGuard DevOps Infrastructure</h1>
+  <div class="sub">wireguard-devops-infra · Portfolio Project · github.com/5678195/wireguard-devops-infra</div>
+  <div class="badge">● PRODUCTION ARCHITECTURE</div>
+</div>
+<div class="diagram">
+  <div class="layer">
+    <div class="layer-label blue">Layer 1 — Clients</div>
+    <div class="nodes">
+      <div class="node"><div class="icon">💻</div><div class="name">Laptop</div><div class="desc">WireGuard Client<br>Windows / Linux</div></div>
+      <div class="node"><div class="icon">📱</div><div class="name">Mobile</div><div class="desc">WireGuard App<br>Android / iOS</div></div>
+      <div class="node"><div class="icon">🖥️</div><div class="name">Any Device</div><div class="desc">UDP :51820<br>Encrypted tunnel</div></div>
+    </div>
+  </div>
+  <div class="arrow">↓ &nbsp;<span style="font-size:10px;font-family:monospace;color:#00d4ff">UDP :51820 — WireGuard encrypted tunnel</span>&nbsp; ↓</div>
+  <div class="layer">
+    <div class="layer-label green">Layer 2 — AWS Cloud (eu-central-1 Frankfurt)</div>
+    <div class="nodes" style="margin-bottom:14px">
+      <div class="node" style="flex:0.5"><div class="icon">🌐</div><div class="name">Elastic IP</div><div class="desc">18.159.94.104<br>Static Public IP</div></div>
+      <div class="node" style="flex:0.5"><div class="icon">🔒</div><div class="name">Security Group</div><div class="desc">UDP 51820<br>TCP 22, 3000, 9090</div></div>
+      <div class="node" style="flex:0.5"><div class="icon">🔑</div><div class="name">Key Pair</div><div class="desc">wireguard-key.pem<br>SSH Access</div></div>
+    </div>
+    <div class="vpn-server">
+      <div class="server-title">🖥️ EC2 Instance — Ubuntu 22.04 (t2.micro)</div>
+      <div class="server-grid">
+        <div class="server-item"><div class="si-label">VPN Core</div><div class="si-val">WireGuard wg0 <span class="port-badge">:51820</span></div></div>
+        <div class="server-item"><div class="si-label">Reverse Proxy</div><div class="si-val">Nginx <span class="port-badge">:80/:443</span></div></div>
+        <div class="server-item"><div class="si-label">Metrics</div><div class="si-val">Prometheus <span class="port-badge">:9090</span></div></div>
+        <div class="server-item"><div class="si-label">Dashboard</div><div class="si-val">Grafana <span class="port-badge">:3000</span></div></div>
+        <div class="server-item"><div class="si-label">System Metrics</div><div class="si-val">Node Exporter <span class="port-badge">:9100</span></div></div>
+        <div class="server-item"><div class="si-label">Container Engine</div><div class="si-val">Docker Compose</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="arrow">↑ &nbsp;<span style="font-size:10px;font-family:monospace;color:#00ff88">Prometheus scrapes metrics every 15s</span>&nbsp; ↑</div>
+  <div class="layer">
+    <div class="layer-label orange">Layer 3 — Infrastructure as Code</div>
+    <div class="nodes">
+      <div class="node"><div class="icon">🏗️</div><div class="name">Terraform</div><div class="desc">EC2 + SG + Elastic IP<br>terraform apply</div></div>
+      <div class="node"><div class="icon">⚙️</div><div class="name">Ansible</div><div class="desc">WireGuard Install<br>ansible-playbook</div></div>
+      <div class="node"><div class="icon">🐳</div><div class="name">Docker Compose</div><div class="desc">Prometheus + Grafana<br>docker-compose up -d</div></div>
+    </div>
+  </div>
+  <div class="layer">
+    <div class="layer-label purple">Layer 4 — CI/CD Pipeline (GitHub Actions)</div>
+    <div class="nodes">
+      <div class="node"><div class="icon">📝</div><div class="name">git push</div><div class="desc">triggers workflow<br>on main branch</div></div>
+      <div class="node" style="flex:0;font-size:20px;color:var(--purple);padding:10px">→</div>
+      <div class="node"><div class="icon">🔍</div><div class="name">Validate</div><div class="desc">terraform validate<br>ansible lint</div></div>
+      <div class="node" style="flex:0;font-size:20px;color:var(--purple);padding:10px">→</div>
+      <div class="node"><div class="icon">🚀</div><div class="name">Deploy</div><div class="desc">SSH to EC2<br>apply config</div></div>
+      <div class="node" style="flex:0;font-size:20px;color:var(--purple);padding:10px">→</div>
+      <div class="node"><div class="icon">✅</div><div class="name">Health Check</div><div class="desc">wg show<br>docker ps</div></div>
+    </div>
+  </div>
+  <div class="layer">
+    <div class="layer-label yellow">Layer 5 — Monitoring + Alerts</div>
+    <div class="nodes">
+      <div class="node"><div class="icon">📊</div><div class="name">Grafana</div><div class="desc">Dashboard ID 1860<br>Node Exporter Full</div></div>
+      <div class="node"><div class="icon">🔥</div><div class="name">Prometheus</div><div class="desc">15s scrape interval<br>Metrics store</div></div>
+      <div class="node"><div class="icon">🔔</div><div class="name">Alertmanager</div><div class="desc">Server down alerts<br>Email / Slack</div></div>
+    </div>
+  </div>
+</div>
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#00d4ff"></div>Network / Access</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#00ff88"></div>AWS Infrastructure</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#ff6b35"></div>IaC / Automation</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#a855f7"></div>CI/CD Pipeline</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#fbbf24"></div>Observability</div>
+</div>
+<div style="text-align:center;margin:20px auto;max-width:900px">
+  <span class="tag green">WireGuard</span><span class="tag blue">AWS EC2</span><span class="tag blue">Elastic IP</span>
+  <span class="tag orange">Terraform</span><span class="tag orange">Ansible</span><span class="tag orange">Docker</span>
+  <span class="tag purple">GitHub Actions</span><span class="tag green">Prometheus</span><span class="tag green">Grafana</span>
+  <span class="tag blue">Nginx</span><span class="tag blue">Ubuntu 22.04</span><span class="tag purple">SSH Deploy</span>
+</div>
+</body>
+</html>
