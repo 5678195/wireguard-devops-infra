@@ -4,34 +4,35 @@
 
 ```mermaid
 graph TD
-    A[💻 Laptop] -->|UDP 51820| D
-    B[📱 Mobile] -->|UDP 51820| D
-    C[🖥️ Any Device] -->|UDP 51820| D
+    Laptop -->|UDP 51820| EIP[Elastic IP 18.159.94.104]
+    Mobile -->|UDP 51820| EIP
+    Device -->|UDP 51820| EIP
 
-    D[🌐 Elastic IP\n18.159.94.104]:::aws --> E
+    EIP --> WG[WireGuard wg0 :51820]
+    EIP --> SG[Security Group]
 
-    subgraph AWS EC2 Frankfurt
-    E[🔒 Security Group\nUDP 51820 / TCP 22,3000,9090]:::aws
-    E --> F[⚡ WireGuard wg0\n:51820]:::vpn
-    E --> G[📊 Prometheus\n:9090]:::monitor
-    E --> H[📈 Grafana\n:3000]:::monitor
-    E --> I[🖥️ Node Exporter\n:9100]:::monitor
+    subgraph EC2 Frankfurt
+    WG
+    Prometheus[:9090]
+    Grafana[:3000]
+    NodeExporter[:9100]
     end
 
-    J[🏗️ Terraform]:::iac -->|provision| D
-    K[⚙️ Ansible]:::iac -->|configure| F
-    L[🐳 Docker Compose]:::iac -->|run| G
+    Terraform -->|provision| EIP
+    Ansible -->|configure| WG
+    Docker -->|run| Prometheus
+    GitHub_Actions -->|deploy| EC2 Frankfurt
 
-    M[🚀 GitHub Actions]:::cicd -->|deploy| E
-
-    classDef aws fill:#FF9900,stroke:#FF9900,color:#000
-    classDef vpn fill:#7B2FBE,stroke:#7B2FBE,color:#fff
-    classDef monitor fill:#E6522C,stroke:#E6522C,color:#fff
-    classDef iac fill:#5C4EE5,stroke:#5C4EE5,color:#fff
-    classDef cicd fill:#2088FF,stroke:#2088FF,color:#fff
+    style EIP fill:#FF9900,color:#000
+    style WG fill:#7B2FBE,color:#fff
+    style Prometheus fill:#E6522C,color:#fff
+    style Grafana fill:#E6522C,color:#fff
+    style NodeExporter fill:#E6522C,color:#fff
+    style Terraform fill:#5C4EE5,color:#fff
+    style Ansible fill:#5C4EE5,color:#fff
+    style Docker fill:#5C4EE5,color:#fff
+    style GitHub_Actions fill:#2088FF,color:#fff
 ```
-A production-grade VPN server built with modern DevOps practices.
-
 ## Architecture
 - **VPN:** WireGuard (UDP 51820)
 - **Cloud:** AWS EC2 (Frankfurt - eu-central-1)
