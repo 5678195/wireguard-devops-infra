@@ -2,37 +2,7 @@
 
 ## Architecture Diagram
 
-```mermaid
-graph TD
-    Laptop -->|UDP 51820| EIP[Elastic IP 18.159.94.104]
-    Mobile -->|UDP 51820| EIP
-    Device -->|UDP 51820| EIP
-
-    EIP --> WG[WireGuard wg0 :51820]
-    EIP --> SG[Security Group]
-
-    subgraph EC2 Frankfurt
-    WG
-    Prometheus[:9090]
-    Grafana[:3000]
-    NodeExporter[:9100]
-    end
-
-    Terraform -->|provision| EIP
-    Ansible -->|configure| WG
-    Docker -->|run| Prometheus
-    GitHub_Actions -->|deploy| EC2 Frankfurt
-
-    style EIP fill:#FF9900,color:#000
-    style WG fill:#7B2FBE,color:#fff
-    style Prometheus fill:#E6522C,color:#fff
-    style Grafana fill:#E6522C,color:#fff
-    style NodeExporter fill:#E6522C,color:#fff
-    style Terraform fill:#5C4EE5,color:#fff
-    style Ansible fill:#5C4EE5,color:#fff
-    style Docker fill:#5C4EE5,color:#fff
-    style GitHub_Actions fill:#2088FF,color:#fff
-```
+See [architecture diagram](docs/architecture.html) for full infrastructure overview.
 ## Architecture
 - **VPN:** WireGuard (UDP 51820)
 - **Cloud:** AWS EC2 (Frankfurt - eu-central-1)
