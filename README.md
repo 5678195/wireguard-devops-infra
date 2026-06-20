@@ -29,18 +29,31 @@ Auto-deploys on every push to main branch:
 4. Restart containers
 5. Health check (wg show)
 
+
 ## How to Deploy
+
+### Step 1 — Provision infrastructure (Terraform)
 ```bash
-# 1. Provision infrastructure
 cd terraform
 terraform init
 terraform apply
+```
 
-# 2. Start monitoring
-ssh into server
+### Step 2 — Configure server (Ansible)
+```bash
+cd ansible
+ansible-playbook -i inventory.ini playbook.yml
+```
+
+### Step 3 — Start monitoring (Docker)
+```bash
+ssh -i wireguard-key.pem ubuntu@18.159.94.104
 cd monitoring
 sudo docker-compose up -d
 ```
+
+### Step 4 — CI/CD (GitHub Actions)
+Auto-deploys on every push to main branch.
 
 ## Q/A
 
