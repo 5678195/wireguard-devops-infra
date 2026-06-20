@@ -1,10 +1,35 @@
 # WireGuard DevOps Infrastructure
 
 ## Architecture Diagram
-👉 [View Interactive Diagram](docs/architecture.html)
 
-![Architecture](docs/architecture.html)
+```mermaid
+graph TD
+    A[💻 Laptop] -->|UDP 51820| D
+    B[📱 Mobile] -->|UDP 51820| D
+    C[🖥️ Any Device] -->|UDP 51820| D
 
+    D[🌐 Elastic IP\n18.159.94.104]:::aws --> E
+
+    subgraph AWS EC2 Frankfurt
+    E[🔒 Security Group\nUDP 51820 / TCP 22,3000,9090]:::aws
+    E --> F[⚡ WireGuard wg0\n:51820]:::vpn
+    E --> G[📊 Prometheus\n:9090]:::monitor
+    E --> H[📈 Grafana\n:3000]:::monitor
+    E --> I[🖥️ Node Exporter\n:9100]:::monitor
+    end
+
+    J[🏗️ Terraform]:::iac -->|provision| D
+    K[⚙️ Ansible]:::iac -->|configure| F
+    L[🐳 Docker Compose]:::iac -->|run| G
+
+    M[🚀 GitHub Actions]:::cicd -->|deploy| E
+
+    classDef aws fill:#FF9900,stroke:#FF9900,color:#000
+    classDef vpn fill:#7B2FBE,stroke:#7B2FBE,color:#fff
+    classDef monitor fill:#E6522C,stroke:#E6522C,color:#fff
+    classDef iac fill:#5C4EE5,stroke:#5C4EE5,color:#fff
+    classDef cicd fill:#2088FF,stroke:#2088FF,color:#fff
+```
 A production-grade VPN server built with modern DevOps practices.
 
 ## Architecture
