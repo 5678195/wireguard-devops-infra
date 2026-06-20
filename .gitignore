@@ -1,0 +1,12 @@
+# Private Keys - kabhi upload mat karna!
+*.pem
+*.key
+
+# Terraform files
+terraform/.terraform/
+terraform/.terraform.lock.hcl
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+
+# Client config
+client.conf
